@@ -7,6 +7,9 @@ export default function OrderSection() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [cart, setCart] = useState<any[]>([])
+  const [customerName, setCustomerName] = useState('')
+  const [customerPhone, setCustomerPhone] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
     fetchCategories()
@@ -50,18 +53,57 @@ export default function OrderSection() {
     alert(`${product.name} agregado al carrito 🛒`);
   }
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     if (cart.length === 0) {
       alert("Tu carrito está vacío. Agrega algunos productos primero.");
       return;
     }
+    if (!customerName || !customerPhone) {
+      alert("Por favor, ingresa tu nombre y teléfono para procesar el pedido.");
+      return;
+    }
 
-    let message = "Hola Creaciones Molly's! 🌸\nMe gustaría hacer el siguiente pedido:\n\n";
+    setIsSubmitting(true);
     let total = 0;
+    cart.forEach(item => total += (item.product.price * item.quantity));
+
+    // 1. Guardar en la base de datos (orders)
+    const { data: orderData, error: orderError } = await supabase
+      .from('orders')
+      .insert([{ 
+        customer_name: customerName, 
+        customer_phone: customerPhone, 
+        total_price: total 
+      }])
+      .select()
+      .single()
+
+    if (orderError) {
+      console.error(orderError);
+      alert("Hubo un error al guardar tu pedido. Inténtalo de nuevo.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    // 2. Guardar los artículos (order_items)
+    const orderItems = cart.map(item => ({
+      order_id: orderData.id,
+      product_id: item.product.id,
+      quantity: item.quantity,
+      price_at_time: item.product.price
+    }))
+
+    const { error: itemsError } = await supabase.from('order_items').insert(orderItems)
+    
+    if (itemsError) {
+      console.error("Error guardando artículos:", itemsError);
+    }
+
+    // 3. Redirigir a WhatsApp
+    let message = `Hola Creaciones Molly's! 🌸\nSoy *${customerName}* (Tel: ${customerPhone}).\nMe gustaría confirmar mi pedido (Referencia: #${orderData.id.split('-')[0]}):\n\n`;
 
     cart.forEach(item => {
       const itemTotal = item.product.price * item.quantity;
-      total += itemTotal;
       message += `- ${item.quantity}x ${item.product.name} ($${itemTotal})\n`;
     });
 
@@ -69,6 +111,13 @@ export default function OrderSection() {
 
     const encodedMessage = encodeURIComponent(message);
     const phoneNumber = "573000000000"; // Cambia este número por el real de WhatsApp
+    
+    // Vaciar carrito
+    setCart([]);
+    setCustomerName('');
+    setCustomerPhone('');
+    setIsSubmitting(false);
+
     window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, '_blank');
   }
 
@@ -131,12 +180,34 @@ export default function OrderSection() {
             )}
           </div>
 
+          <div style={{ marginBottom: '16px', display: 'flex', gap: '10px' }}>
+            <input 
+              type="text" 
+              placeholder="Tu nombre completo" 
+              value={customerName}
+              onChange={e => setCustomerName(e.target.value)}
+              style={{ flex: 1, padding: '9px 12px', borderRadius: '8px', border: '1px solid #ED93B1', outline: 'none', fontSize: '13px' }}
+            />
+            <input 
+              type="tel" 
+              placeholder="Tu teléfono" 
+              value={customerPhone}
+              onChange={e => setCustomerPhone(e.target.value)}
+              style={{ flex: 1, padding: '9px 12px', borderRadius: '8px', border: '1px solid #ED93B1', outline: 'none', fontSize: '13px' }}
+            />
+          </div>
+
           <div className="action-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ fontSize: '13px', fontWeight: '500', color: '#5F5E5A' }}>
               Carrito: {cart.reduce((acc, item) => acc + item.quantity, 0)} items
             </div>
-            <button className="btn-buy" style={{ padding: '9px 24px' }} onClick={handleCheckout}>
-              Finalizar compra por WhatsApp
+            <button 
+              className="btn-buy" 
+              style={{ padding: '9px 24px', opacity: isSubmitting ? 0.7 : 1 }} 
+              onClick={handleCheckout}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Procesando...' : 'Finalizar compra por WhatsApp'}
             </button>
           </div>
         </div>
