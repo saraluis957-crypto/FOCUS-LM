@@ -1,24 +1,15 @@
-import Navbar from './components/Navbar'
-import Hero from './components/Hero'
-import Services from './components/Services'
-import OrderSection from './components/OrderSection'
-import Footer from './components/Footer'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import Home from './pages/Home'
+import Admin from './pages/Admin'
 
 function App() {
   return (
-    <div id="inicio">
-      <Navbar />
-      <Hero />
-      <div id="servicios">
-        <Services />
-      </div>
-      <div id="pedido">
-        <OrderSection />
-      </div>
-      <div id="contacto">
-        <Footer />
-      </div>
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/admin/*" element={<Admin />} />
+      </Routes>
+    </Router>
   )
 }
 
