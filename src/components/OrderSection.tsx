@@ -6,6 +6,7 @@ export default function OrderSection() {
   const [products, setProducts] = useState<any[]>([])
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [cart, setCart] = useState<any[]>([])
 
   useEffect(() => {
     fetchCategories()
@@ -36,6 +37,39 @@ export default function OrderSection() {
       setSelectedCategory(categoryId)
       fetchProducts(categoryId)
     }
+  }
+
+  const addToCart = (product: any) => {
+    setCart(prev => {
+      const existing = prev.find(item => item.product.id === product.id);
+      if (existing) {
+        return prev.map(item => item.product.id === product.id ? { ...item, quantity: item.quantity + 1 } : item);
+      }
+      return [...prev, { product, quantity: 1 }];
+    });
+    alert(`${product.name} agregado al carrito 🛒`);
+  }
+
+  const handleCheckout = () => {
+    if (cart.length === 0) {
+      alert("Tu carrito está vacío. Agrega algunos productos primero.");
+      return;
+    }
+
+    let message = "Hola Creaciones Molly's! 🌸\nMe gustaría hacer el siguiente pedido:\n\n";
+    let total = 0;
+
+    cart.forEach(item => {
+      const itemTotal = item.product.price * item.quantity;
+      total += itemTotal;
+      message += `- ${item.quantity}x ${item.product.name} ($${itemTotal})\n`;
+    });
+
+    message += `\n*Total estimado: $${total}*\n\nPor favor, confírmenme disponibilidad y métodos de pago. ¡Gracias!`;
+
+    const encodedMessage = encodeURIComponent(message);
+    const phoneNumber = "573000000000"; // Cambia este número por el real de WhatsApp
+    window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, '_blank');
   }
 
   return (
@@ -79,7 +113,13 @@ export default function OrderSection() {
                     </div>
                     <h4 style={{ fontSize: '13px', marginBottom: '4px' }}>{product.name}</h4>
                     <p style={{ fontSize: '12px', color: '#D4537E', fontWeight: 'bold' }}>${product.price}</p>
-                    <button className="btn-add" style={{ width: '100%', marginTop: '8px', padding: '6px' }}>Agregar al carrito</button>
+                    <button 
+                      className="btn-add" 
+                      style={{ width: '100%', marginTop: '8px', padding: '6px' }}
+                      onClick={() => addToCart(product)}
+                    >
+                      Agregar al carrito
+                    </button>
                   </div>
                 ))}
               </div>
@@ -91,8 +131,13 @@ export default function OrderSection() {
             )}
           </div>
 
-          <div className="action-row">
-            <button className="btn-buy" style={{ width: '100%' }}>Finalizar compra</button>
+          <div className="action-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ fontSize: '13px', fontWeight: '500', color: '#5F5E5A' }}>
+              Carrito: {cart.reduce((acc, item) => acc + item.quantity, 0)} items
+            </div>
+            <button className="btn-buy" style={{ padding: '9px 24px' }} onClick={handleCheckout}>
+              Finalizar compra por WhatsApp
+            </button>
           </div>
         </div>
       </div>

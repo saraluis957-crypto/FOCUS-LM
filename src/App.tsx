@@ -6,13 +6,19 @@ import Footer from './components/Footer'
 
 function App() {
   return (
-    <>
+    <div id="inicio">
       <Navbar />
       <Hero />
-      <Services />
-      <OrderSection />
-      <Footer />
-    </>
+      <div id="servicios">
+        <Services />
+      </div>
+      <div id="pedido">
+        <OrderSection />
+      </div>
+      <div id="contacto">
+        <Footer />
+      </div>
+    </div>
   )
 }
 

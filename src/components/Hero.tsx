@@ -5,8 +5,8 @@ export default function Hero() {
       <h1>Regala momentos<br /><span>llenos de amor</span></h1>
       <p>Creamos anchetas y decoraciones únicas para cumpleaños, fechas especiales y celebraciones. Cada detalle hecho con cariño.</p>
       <div className="hero-btns">
-        <button className="btn-primary">Ver servicios</button>
-        <button className="btn-secondary">Haz tu pedido</button>
+        <a href="#servicios" className="btn-primary" style={{ textDecoration: 'none' }}>Ver servicios</a>
+        <a href="#pedido" className="btn-secondary" style={{ textDecoration: 'none' }}>Haz tu pedido</a>
       </div>
     </div>
   )

@@ -14,10 +14,10 @@ export default function Navbar() {
         {isOpen ? '✕' : '☰'}
       </button>
       <div className={`nav-links ${isOpen ? 'open' : ''}`}>
-        <a className="nav-link" href="#" onClick={() => setIsOpen(false)}>Inicio</a>
-        <a className="nav-link" href="#" onClick={() => setIsOpen(false)}>Servicios</a>
-        <a className="nav-link" href="#" onClick={() => setIsOpen(false)}>Redes & contacto</a>
-        <a className="nav-link cta" href="#" onClick={() => setIsOpen(false)}>Haz tu pedido</a>
+        <a className="nav-link" href="#inicio" onClick={() => setIsOpen(false)}>Inicio</a>
+        <a className="nav-link" href="#servicios" onClick={() => setIsOpen(false)}>Servicios</a>
+        <a className="nav-link" href="#contacto" onClick={() => setIsOpen(false)}>Redes & contacto</a>
+        <a className="nav-link cta" href="#pedido" onClick={() => setIsOpen(false)}>Haz tu pedido</a>
       </div>
     </nav>
   )
